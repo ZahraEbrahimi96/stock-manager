@@ -2,19 +2,19 @@ package com.example.stockmanager.tools;
 
 import com.example.stockmanager.model.entity.Product;
 import com.github.javafaker.Faker;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FakeDataService {
-    private final Faker faker = new Faker();
+    @Resource
+    private Faker faker = new Faker();
 
     public Product createFakeProduct(){
-        return Product
-                .builder()
-                .name(faker.book().title())
-                .price(faker.number().numberBetween(50, 5000))
-                .quantity(faker.number().numberBetween(1, 10))
-                .build();
-
+        Product product = new Product();
+        product.setName(faker.name().name());
+        product.setPrice(faker.number().numberBetween(50,100));
+        product.setQuantity(faker.number().numberBetween(1,100));
+        return product;
     }
 }

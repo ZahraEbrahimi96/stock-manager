@@ -2,19 +2,17 @@ package com.example.stockmanager.tools;
 
 import com.example.stockmanager.model.entity.Product;
 import com.example.stockmanager.model.service.ProductService;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+
 @Slf4j
 @Component
 public class DataInitializer implements CommandLineRunner {
-    private final FakeDataService fakeDataService;
-    private final ProductService productService;
-
-    public DataInitializer(FakeDataService fakeDataService, ProductService productService) {
-        this.fakeDataService = fakeDataService;
-        this.productService = productService;
-    }
+    @Resource
+    private FakeDataService fakeDataService;
+    private ProductService productService;
 
 
     @Override
