@@ -10,8 +10,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class DataInitializer implements CommandLineRunner {
+
     @Resource
     private FakeDataService fakeDataService;
+    @Resource
     private ProductService productService;
 
 

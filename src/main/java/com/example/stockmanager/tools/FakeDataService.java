@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class FakeDataService {
-    @Resource
+
     private Faker faker = new Faker();
 
     public Product createFakeProduct(){

@@ -15,7 +15,6 @@ public class ProductController {
 
     @Resource
     private ProductService productService;
-
     @Resource
     private ProductReservationService productReservationService;
 

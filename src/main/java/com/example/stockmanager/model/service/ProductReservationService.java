@@ -17,12 +17,9 @@ public class ProductReservationService {
 
     @Resource
     private ProductReservationRepository productReservationRepository;
-
     @Resource
     private ProductRepository productRepository;
 
-    @Resource
-    private Product product;
 
 
     public ProductReservation save(Long productId, int amount, int hours) {

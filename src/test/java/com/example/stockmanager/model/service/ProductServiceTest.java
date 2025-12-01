@@ -6,11 +6,8 @@ import jakarta.annotation.Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-
 import java.util.List;
 import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -27,18 +24,27 @@ public class ProductServiceTest {
 
     private Product testProduct;
 
+
     @BeforeEach
     void setUp() {
         productRepository.deleteAll();
+//        Product testProduct = new Product();
+//        testProduct.setName("book");
+//        testProduct.setQuantity(12);
+//        testProduct.setPrice(78);
+//       productService.save(testProduct);
+    }
+
+
+
+    @Test
+    void getAllProducts() {
+
         Product testProduct = new Product();
         testProduct.setName("book");
         testProduct.setQuantity(12);
         testProduct.setPrice(78);
-       productService.save(testProduct);
-    }
-
-    @Test
-    void getAllProducts() {
+        productService.save(testProduct);
 
         Product product =  new Product();
         product.setName("phone");
@@ -57,6 +63,12 @@ public class ProductServiceTest {
 
     @Test
     void getProductById() {
+        Product testProduct = new Product();
+        testProduct.setName("book");
+        testProduct.setQuantity(12);
+        testProduct.setPrice(78);
+        productService.save(testProduct);
+
         Optional<Product> product = productService.findById(testProduct.getId());
 
         assertTrue(product.isPresent());
@@ -67,18 +79,38 @@ public class ProductServiceTest {
 
     @Test
     void getProductById_notFound() {
+        Product testProduct = new Product();
+        testProduct.setName("book");
+        testProduct.setQuantity(12);
+        testProduct.setPrice(78);
+        productService.save(testProduct);
+
         Optional<Product> product = productService.findById(999L);
         assertFalse(product.isPresent(), "Product should not be found");
     }
 
     @Test
     void getQuantityById() {
+
+        Product testProduct = new Product();
+        testProduct.setName("book");
+        testProduct.setQuantity(12);
+        testProduct.setPrice(78);
+        productService.save(testProduct);
+
         int stock = productService.getQuantityById(testProduct.getId());
         assertEquals(12, stock, "Stock should be 12");
     }
 
     @Test
     void getQuantityById_notFound() {
+
+        Product testProduct = new Product();
+        testProduct.setName("book");
+        testProduct.setQuantity(12);
+        testProduct.setPrice(78);
+        productService.save(testProduct);
+
         Exception exception = assertThrows(RuntimeException.class,
                 () -> productService.getQuantityById(999L)
         );
@@ -86,12 +118,25 @@ public class ProductServiceTest {
 
     @Test
     void getAvailableQuantityById() {
+        Product testProduct = new Product();
+        testProduct.setName("book");
+        testProduct.setQuantity(12);
+        testProduct.setPrice(78);
+        productService.save(testProduct);
+
         int stock = productService.getAvailableQuantityById(testProduct.getId());
         assertEquals(12, stock, "Stock should be 12");
     }
 
     @Test
     void getAvailableQuantityById_notFound() {
+
+        Product testProduct = new Product();
+        testProduct.setName("book");
+        testProduct.setQuantity(12);
+        testProduct.setPrice(78);
+        productService.save(testProduct);
+
         Exception exception = assertThrows(RuntimeException.class,
                 () -> productService.getAvailableQuantityById(999L)
         );
@@ -99,6 +144,13 @@ public class ProductServiceTest {
 
     @Test
     void addQuantity() {
+
+        Product testProduct = new Product();
+        testProduct.setName("book");
+        testProduct.setQuantity(12);
+        testProduct.setPrice(78);
+        productService.save(testProduct);
+
         productService.addQuantity(testProduct.getId(), 50);
 
         Product updatedProduct = productRepository.findById(testProduct.getId()).get();
@@ -108,15 +160,27 @@ public class ProductServiceTest {
 
     @Test
     void buyProduct_success() {
-        productService.buyProduct(testProduct.getId(), 5);
+        Product testProduct = new Product();
+        testProduct.setName("book");
+        testProduct.setQuantity(12);
+        testProduct.setPrice(78);
+        productService.save(testProduct);
 
-        Product updatedProduct = productRepository.findById(testProduct.getId()).get();
-        assertEquals(7, updatedProduct.getQuantity(), "Stock should be decreased by 5");
-        assertEquals(7, updatedProduct.getAvailableQuantity());
+        productService.buyProduct(testProduct.getId(),6);
+
+        assertEquals(6, testProduct.getQuantity(), "Stock should be decreased by 5");
+        assertEquals(6, testProduct.getAvailableQuantity());
     }
 
     @Test
     void buyProduct_insufficientQuantity() {
+
+        Product testProduct = new Product();
+        testProduct.setName("book");
+        testProduct.setQuantity(12);
+        testProduct.setPrice(78);
+        productService.save(testProduct);
+
         Exception exception = assertThrows(RuntimeException.class,
                 () -> productService.buyProduct(testProduct.getId(), 150),
                 "Should throw exception for insufficient quantity"

@@ -13,11 +13,12 @@ import java.util.List;
 
 @Component
 public class ScheduleConfig{
-    @Resource
-    private ProductReservationRepository productReservationRepository;
 
     @Resource
+    private ProductReservationRepository productReservationRepository;
+    @Resource
     private ProductRepository productRepository;
+
 
     @Scheduled(fixedRate = 60000)
     @Transactional
