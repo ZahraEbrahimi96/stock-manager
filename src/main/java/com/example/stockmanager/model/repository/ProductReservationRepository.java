@@ -12,4 +12,6 @@ public interface ProductReservationRepository extends JpaRepository<ProductReser
 
     List<ProductReservation> findAllByExpiresAtBefore(LocalDateTime now);
 
+    void deleteAllByExpiresAtBefore(LocalDateTime now);
+
 }

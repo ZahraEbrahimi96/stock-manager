@@ -5,9 +5,9 @@ import com.example.stockmanager.model.entity.ProductReservation;
 import com.example.stockmanager.model.repository.ProductRepository;
 import com.example.stockmanager.model.repository.ProductReservationRepository;
 import jakarta.annotation.Resource;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class ProductReservationService {
 
 
     public ProductReservation save(Long productId, int amount, int hours) {
-        Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
+        final Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
 
         if (amount > product.getAvailableQuantity()) {
             throw new RuntimeException("Amount is greater than available quantity");
@@ -31,7 +31,7 @@ public class ProductReservationService {
         product.setAvailableQuantity(product.getAvailableQuantity() - amount);
         productRepository.save(product);
 
-        ProductReservation productReservation = new ProductReservation();
+        final ProductReservation productReservation = new ProductReservation();
         productReservation.setProduct(product);
         productReservation.setExpiresAt(LocalDateTime.now().plusHours(hours));
         productReservation.setReservedQuantity(amount);
@@ -39,7 +39,7 @@ public class ProductReservationService {
     }
 
     public void deleteById(Long id){
-        ProductReservation productReservation = productReservationRepository.findById(id).get();
+        final ProductReservation productReservation = productReservationRepository.findById(id).get();
         Product product = productReservationRepository.findById(id).get().getProduct();
         product.setAvailableQuantity((product.getAvailableQuantity() + productReservation.getReservedQuantity()));
         productRepository.save(product);
@@ -53,6 +53,11 @@ public class ProductReservationService {
 
     public List<ProductReservation> findAll(){
         return productReservationRepository.findAll();
+    }
+
+    @Scheduled(fixedRate = 60000)
+    public void deleteAllExpired (){
+        productReservationRepository.deleteAllByExpiresAtBefore(LocalDateTime.now().minusMinutes(5));
     }
 
 }

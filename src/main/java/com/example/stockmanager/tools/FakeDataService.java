@@ -11,7 +11,7 @@ public class FakeDataService {
     private Faker faker = new Faker();
 
     public Product createFakeProduct(){
-        Product product = new Product();
+       final Product product = new Product();
         product.setName(faker.name().name());
         product.setPrice(faker.number().numberBetween(50,100));
         product.setQuantity(faker.number().numberBetween(1,100));

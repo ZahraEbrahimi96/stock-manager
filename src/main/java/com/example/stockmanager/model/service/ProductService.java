@@ -52,18 +52,19 @@ public class ProductService {
     }
 
     public void addQuantity(Long id, int amount) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+        final Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
         product.setQuantity(product.getQuantity() + amount);
+        product.setAvailableQuantity(product.getAvailableQuantity() + amount);
         productRepository.save(product);
     }
 
-    //TODO: CHECK
     public void buyProduct(Long id, int amount) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+        final Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
         if (amount > product.getAvailableQuantity()) {
             throw new RuntimeException("Insufficient quantity");
         }
         product.setQuantity(product.getQuantity() - amount);
+        product.setAvailableQuantity(product.getAvailableQuantity() - amount);
         productRepository.save(product);
     }
 }

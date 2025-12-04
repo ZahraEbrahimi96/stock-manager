@@ -22,8 +22,13 @@ public class Product implements Serializable {
     private int price;
 
     @Column(name = "availableQuantity")
-    private int availableQuantity = quantity;
+    private int availableQuantity;
 
+
+    @PrePersist
+    public void initAvailableQuantity(){
+        this.availableQuantity = this.quantity;
+    }
 
     public Long getId() {
         return id;

@@ -16,13 +16,12 @@ public class ProductServiceTest {
 
     @Resource
     private ProductService productService;
-
     @Resource
     private ProductRepository productRepository;
 
 
 
-    private Product testProduct;
+//    private Product testProduct;
 
 
     @BeforeEach
@@ -168,7 +167,7 @@ public class ProductServiceTest {
 
         productService.buyProduct(testProduct.getId(),6);
 
-        assertEquals(6, testProduct.getQuantity(), "Stock should be decreased by 5");
+        assertEquals(6, testProduct.getQuantity());
         assertEquals(6, testProduct.getAvailableQuantity());
     }
 

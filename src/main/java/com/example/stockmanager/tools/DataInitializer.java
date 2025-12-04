@@ -21,7 +21,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         int n = 100;
         for (int i = 0; i < n; i++) {
-            Product product= fakeDataService.createFakeProduct();
+            final Product product= fakeDataService.createFakeProduct();
             productService.save(product);
         }
         log.info("Product save success." + n);
