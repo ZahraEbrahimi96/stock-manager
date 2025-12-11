@@ -1,5 +1,7 @@
 package com.example.stockmanager.controller;
 
+import com.example.stockmanager.controller.exceptions.OutOfStockException;
+import com.example.stockmanager.controller.exceptions.ProductNotFoundException;
 import com.example.stockmanager.model.entity.Product;
 import com.example.stockmanager.model.service.ProductReservationService;
 import com.example.stockmanager.model.service.ProductService;
@@ -25,55 +27,58 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    public ResponseEntity<Product> getProductById(@PathVariable final Long id) {
         return productService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/{id}/quantity")
-    public int getQuantityById(@PathVariable Long id) {
+    public int getQuantityById(@PathVariable final Long id) throws ProductNotFoundException {
         return productService.getQuantityById(id);
     }
 
     @GetMapping("/{id}/availableQuantity")
-    public int getAvailableQuantityById(@PathVariable Long id) {
+    public int getAvailableQuantityById(@PathVariable final Long id) throws ProductNotFoundException {
         return productService.getAvailableQuantityById(id);
     }
 
     @PostMapping
-    public Product createProduct(@RequestBody Product product) {
+    public Product createProduct(@RequestBody final Product product) {
         return productService.save(product);
     }
 
     @PostMapping("/{id}/reserve")
-    public ResponseEntity<String> reserveProduct(@PathVariable Long id,
-                                                 @RequestParam int amount,
-                                                 @RequestParam (defaultValue = "1") int hour) {
+    public ResponseEntity<String> reserveProduct(@PathVariable final Long id,
+                                                 @RequestParam final int amount,
+                                                 @RequestParam (defaultValue = "1") final int hour) throws OutOfStockException, ProductNotFoundException {
         productReservationService.save(id, amount, hour);
         return ResponseEntity.ok("Product Reserved");
     }
 
     @PutMapping("/{id}/add")
-    public void addProduct(@PathVariable Long id, @RequestParam int amount) {
+    public void addProduct(@PathVariable final Long id, @RequestParam final int amount) throws ProductNotFoundException {
         productService.addQuantity(id, amount);
     }
 
     @PutMapping("/{id}/buy")
-    public void buyProduct(@PathVariable Long id, @RequestParam int amount) {
+    public void buyProduct(@PathVariable final Long id, @RequestParam final int amount) throws OutOfStockException, ProductNotFoundException {
         productService.buyProduct(id, amount);
     }
 
-    @DeleteMapping
-    public void deleteProductById(@PathVariable Long id) {
+    @DeleteMapping("/{id}/remove")
+    public void deleteProductById(@PathVariable final Long id) {
         productService.deleteById(id);
     }
 
     @DeleteMapping("/{id}/cancel")
-    public void cancelReservationById(@PathVariable Long id) {
+    public void cancelReservationById(@PathVariable final Long id) {
         productReservationService.deleteById(id);
     }
 
-
+    @DeleteMapping
+    public void releaseExpiredProduct(){
+        productReservationService.deleteAllExpired();
+    }
 
 }

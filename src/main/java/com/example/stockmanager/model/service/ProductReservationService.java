@@ -1,5 +1,7 @@
 package com.example.stockmanager.model.service;
 
+import com.example.stockmanager.controller.exceptions.OutOfStockException;
+import com.example.stockmanager.controller.exceptions.ProductNotFoundException;
 import com.example.stockmanager.model.entity.Product;
 import com.example.stockmanager.model.entity.ProductReservation;
 import com.example.stockmanager.model.repository.ProductRepository;
@@ -22,11 +24,11 @@ public class ProductReservationService {
 
 
 
-    public ProductReservation save(Long productId, int amount, int hours) {
-        final Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
+    public ProductReservation save(final Long productId, final int amount, final int hours) throws ProductNotFoundException, OutOfStockException {
+        final Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
         if (amount > product.getAvailableQuantity()) {
-            throw new RuntimeException("Amount is greater than available quantity");
+            throw new OutOfStockException("Amount is greater than available quantity");
         }
         product.setAvailableQuantity(product.getAvailableQuantity() - amount);
         productRepository.save(product);
@@ -38,17 +40,17 @@ public class ProductReservationService {
         return productReservationRepository.save(productReservation);
     }
 
-    public void deleteById(Long id){
-        final ProductReservation productReservation = productReservationRepository.findById(id).get();
-        Product product = productReservationRepository.findById(id).get().getProduct();
-        product.setAvailableQuantity((product.getAvailableQuantity() + productReservation.getReservedQuantity()));
-        productRepository.save(product);
-
-        productReservationRepository.deleteById(id);
+    public void deleteById(final Long id){
+        productReservationRepository.findById(id).ifPresent(productReservation -> {
+            final Product product = productReservation.getProduct();
+            product.setAvailableQuantity((product.getAvailableQuantity() + productReservation.getReservedQuantity()));
+            productRepository.save(product);
+            productReservationRepository.deleteById(id);
+        });
     }
 
-    public ProductReservation findById(Long id){
-        return productReservationRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+    public ProductReservation findById(final Long id) throws ProductNotFoundException {
+        return productReservationRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Product not found"));
     }
 
     public List<ProductReservation> findAll(){
@@ -59,5 +61,4 @@ public class ProductReservationService {
     public void deleteAllExpired (){
         productReservationRepository.deleteAllByExpiresAtBefore(LocalDateTime.now().minusMinutes(5));
     }
-
 }

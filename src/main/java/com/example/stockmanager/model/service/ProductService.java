@@ -1,5 +1,7 @@
 package com.example.stockmanager.model.service;
 
+import com.example.stockmanager.controller.exceptions.OutOfStockException;
+import com.example.stockmanager.controller.exceptions.ProductNotFoundException;
 import com.example.stockmanager.model.entity.Product;
 import com.example.stockmanager.model.entity.ProductReservation;
 import com.example.stockmanager.model.repository.ProductRepository;
@@ -21,16 +23,15 @@ public class ProductService {
     private ProductRepository productRepository;
 
 
-    public Product save(Product product) {
-        return productRepository.save(product);
+    public Product save(final Product product) {return productRepository.save(product);
     }
 
-    public void deleteById(Long id) {
+    public void deleteById(final Long id) {
         productRepository.deleteById(id);
     }
 
 
-    public void update(Product product) {productRepository.save(product);}
+    public void update(final Product product) {productRepository.save(product);}
 
 
     public List<Product> findAll() {
@@ -38,30 +39,33 @@ public class ProductService {
     }
 
 
-    public Optional<Product> findById(Long id) {
+    public Optional<Product> findById(final Long id) {
         return productRepository.findById(id);
     }
 
 
-    public int getQuantityById(Long id) {
-        return findById(id).map(Product::getQuantity).orElseThrow(() -> new RuntimeException("Product not found"));
+    public int getQuantityById(final Long id) throws ProductNotFoundException {
+        return findById(id).map(Product::getQuantity).orElseThrow(() -> new ProductNotFoundException("Product not found"));
     }
 
-    public int getAvailableQuantityById(Long id) {
-        return findById(id).map(Product::getAvailableQuantity).orElseThrow(() -> new RuntimeException("Product not found"));
+
+    public int getAvailableQuantityById(final Long id) throws ProductNotFoundException {
+        return findById(id).map(Product::getAvailableQuantity).orElseThrow(() -> new ProductNotFoundException("Product not found"));
     }
 
-    public void addQuantity(Long id, int amount) {
-        final Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+
+    public void addQuantity(final Long id, final int amount) throws ProductNotFoundException {
+        final Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Product not found"));
         product.setQuantity(product.getQuantity() + amount);
         product.setAvailableQuantity(product.getAvailableQuantity() + amount);
         productRepository.save(product);
     }
 
-    public void buyProduct(Long id, int amount) {
-        final Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+
+    public void buyProduct(final Long id, final int amount) throws ProductNotFoundException, OutOfStockException {
+        final Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Product not found"));
         if (amount > product.getAvailableQuantity()) {
-            throw new RuntimeException("Insufficient quantity");
+            throw new OutOfStockException("Insufficient quantity");
         }
         product.setQuantity(product.getQuantity() - amount);
         product.setAvailableQuantity(product.getAvailableQuantity() - amount);
