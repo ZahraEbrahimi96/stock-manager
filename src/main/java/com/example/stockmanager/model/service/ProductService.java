@@ -3,21 +3,21 @@ package com.example.stockmanager.model.service;
 import com.example.stockmanager.controller.exceptions.OutOfStockException;
 import com.example.stockmanager.controller.exceptions.ProductNotFoundException;
 import com.example.stockmanager.model.entity.Product;
-import com.example.stockmanager.model.entity.ProductReservation;
 import com.example.stockmanager.model.repository.ProductRepository;
-import com.example.stockmanager.model.repository.ProductReservationRepository;
 import jakarta.annotation.Resource;
-import org.springframework.http.ResponseEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
 
 @Service
 @Transactional
 public class ProductService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
 
     @Resource
     private ProductRepository productRepository;
@@ -35,7 +35,16 @@ public class ProductService {
 
 
     public List<Product> findAll() {
-        return productRepository.findAll();
+        final List<Product> allProducts = productRepository.findAll();
+        String a = "test";
+         a = a + "ok";
+        allProducts.forEach(p -> {
+//            if (LOGGER.isDebugEnabled()) {
+//                LOGGER.debug("Product is" + p.getName());
+//            }
+                LOGGER.debug("Product is {}", p.getName());
+        });
+        return allProducts;
     }
 
 
@@ -54,21 +63,33 @@ public class ProductService {
     }
 
 
-    public void addQuantity(final Long id, final int amount) throws ProductNotFoundException {
-        final Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Product not found"));
+    public Product addQuantity(final Long id, final int amount) throws ProductNotFoundException {
+        final Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException());
         product.setQuantity(product.getQuantity() + amount);
         product.setAvailableQuantity(product.getAvailableQuantity() + amount);
-        productRepository.save(product);
+        return productRepository.save(product);
     }
 
 
-    public void buyProduct(final Long id, final int amount) throws ProductNotFoundException, OutOfStockException {
+    public Product buyProduct(final Long id, final int amount) throws ProductNotFoundException, OutOfStockException {
         final Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Product not found"));
         if (amount > product.getAvailableQuantity()) {
             throw new OutOfStockException("Insufficient quantity");
         }
         product.setQuantity(product.getQuantity() - amount);
         product.setAvailableQuantity(product.getAvailableQuantity() - amount);
-        productRepository.save(product);
+        return productRepository.save(product);
+    }
+
+    public Optional<Product> addTenStockToProduct(final Long id) throws ProductNotFoundException {
+       try {
+           return Optional.of(addQuantity(id, 10));
+       } catch(ProductNotFoundException e) {
+           // LOGGER.info("Product with " + id + " id not found");
+           LOGGER.info("Product with {} id not found", id);//BEST PRACTICE
+           LOGGER.info("Product with {} id not found", id, e);//WILL SHOW STACKTRACE
+           // throw e; //OPTIONAL, VERY COMMON
+       }
+        return Optional.empty();
     }
 }

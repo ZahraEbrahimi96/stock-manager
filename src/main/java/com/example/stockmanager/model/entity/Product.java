@@ -12,7 +12,8 @@ public class Product implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name")
+    //ALL WRAPPER CLASS TYPE REPLACE WITH PRIMITIVE TYPE
+
     private String name;
 
     @Column(name = "quantity")
@@ -21,7 +22,7 @@ public class Product implements Serializable {
     @Column(name = "price")
     private int price;
 
-    @Column(name = "availableQuantity")
+    @Column(name = "available_quantity")
     private int availableQuantity;
 
 

@@ -44,140 +44,61 @@ public class ProductReservationServiceTest {
     }
 
     @Test
-    @DisplayName("success save and reduce available quantity")
-    void successSaveReserveProduct() throws OutOfStockException, ProductNotFoundException {
+    @DisplayName("successful reservation")
+    void successful_reservation() throws ProductNotFoundException, OutOfStockException {
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(productReservationRepository.save(any(ProductReservation.class)))
-                .thenAnswer(inv -> inv.getArgument(0)); //CHECK
+        ProductReservation reservation = reservationService.save(1L, 6, 5);
 
-        ProductReservation result = reservationService.save(1L, 25, 3);
-
-        assertNotNull(result);
-        assertEquals(25, result.getReservedQuantity());
-        assertEquals(product, result.getProduct());
-        assertTrue(result.getExpiresAt().isAfter(LocalDateTime.now()));
-        assertTrue(result.getExpiresAt().isBefore(LocalDateTime.now().plusHours(4)));
+        verify(productReservationRepository).save(reservation);
+        assertNotNull(reservation);
+        assertEquals(5,reservation.getReservedQuantity());
+        assertEquals(product,reservation.getProduct());
+        assertTrue(reservation.getExpiresAt().isAfter(LocalDateTime.now()));
+        assertTrue(reservation.getExpiresAt().isBefore(LocalDateTime.now().plusHours(5)));
 
         verify(productRepository).save(product);
-        assertEquals(75, product.getAvailableQuantity());
+        assertEquals(950, product.getAvailableQuantity());
     }
 
     @Test
-    @DisplayName("should throw ProductNotFoundException")
-    void save_ProductNotFound() {
-        when(productRepository.findById(999L)).thenReturn(Optional.empty()); //CHECK
+    @DisplayName("unsuccessful reservation - insufficient stock")
+    void unsuccessful_reservation_insufficient_stock() throws ProductNotFoundException, OutOfStockException {
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+
+        OutOfStockException exception = assertThrows(OutOfStockException.class, () -> {
+            reservationService.save(1L, 110, 1);
+        });
+
+        assertEquals("Amount is greater than available quantity", exception.getMessage());
+        verify(productRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("unsuccessful reservation - product not found")
+    void unsuccessful_reservation_productNotFound() throws ProductNotFoundException, OutOfStockException {
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
 
         ProductNotFoundException exception = assertThrows(ProductNotFoundException.class, () -> {
-            reservationService.save(999L, 10, 1);
+            reservationService.save(5L, 10, 1);
         });
 
         assertEquals("Product not found", exception.getMessage());
         verify(productRepository, never()).save(any());
     }
 
-//    @Test
-//    @DisplayName("save- should throw OutOfStockException")
-//    void save_ShouldThrowOutOfStock() {
-//        product.setAvailableQuantity(5);
-//        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-//
-//        OutOfStockException exception = assertThrows(OutOfStockException.class, () -> {
-//            reservationService.save(1L, 10, 1);
-//        });
-//
-//        assertEquals("Amount is greater than available quantity", exception.getMessage());
-//        verify(productRepository, never()).save(any());
-//    }
-//
-//    @Test
-//    @DisplayName("success deleteById - should restore available quantity")
-//    void deleteById_ShouldRestoreStockAndDelete() {
-//        ProductReservation reservation = new ProductReservation();
-//        reservation.setId(5L);
-//        reservation.setProduct(product);
-//        reservation.setReservedQuantity(30);
-//        reservation.setExpiresAt(LocalDateTime.now().plusHours(1));
-//
-//        when(productReservationRepository.findById(5L)).thenReturn(Optional.of(reservation));
-//
-//        reservationService.deleteById(5L);
-//
-//        assertEquals(130, product.getAvailableQuantity()); // 100 + 30
-//        verify(productRepository).save(product);
-//        verify(productReservationRepository).deleteById(5L);
-//    }
-//
-//    @Test
-//    @DisplayName("deleteById failed")
-//    void deleteById_NotFound() {
-//        when(productReservationRepository.findById(999L)).thenReturn(Optional.empty());
-//
-//        reservationService.deleteById(999L);
-//
-//        verify(productRepository, never()).save(any());
-//        verify(productReservationRepository, never()).deleteById(any());
-//    }
-//
-//    @Test
-//    @DisplayName("success findById")
-//    void findById_Success() throws ProductNotFoundException {
-//        ProductReservation reservation = new ProductReservation();
-//        when(productReservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
-//
-//        ProductReservation result = reservationService.findById(1L);
-//
-//        assertSame(reservation, result);
-//    }
-//
-//    @Test
-//    @DisplayName("findById() - should throw productNotFoundException")
-//    void findById_NotFound_ShouldThrow() {
-//        when(productReservationRepository.findById(999L)).thenReturn(Optional.empty());
-//
-//        ProductNotFoundException exception = assertThrows(ProductNotFoundException.class, () -> {
-//            reservationService.findById(999L);
-//        });
-//
-//        assertEquals("Product not found", exception.getMessage());
-//    }
-//
-//    @Test
-//    @DisplayName("findAll-success")
-//    void findAll_ShouldReturnList() {
-//        List<ProductReservation> list = List.of(new ProductReservation(), new ProductReservation());
-//        when(productReservationRepository.findAll()).thenReturn(list);
-//
-//        assertEquals(2, reservationService.findAll().size());
-//    }
-//
-//    @Test
-//    @DisplayName("deleteAllExpired() - should restore available quantity")
-//    void deleteAllExpired_ShouldRestoreStockForExpiredReservations() {
-//        LocalDateTime fiveMinutesAgo = LocalDateTime.now().minusMinutes(5);
-//
-//        ProductReservation expired1 = new ProductReservation();
-//        expired1.setId(10L);
-//        expired1.setReservedQuantity(20);
-//        expired1.setProduct(product);
-//        expired1.setExpiresAt(fiveMinutesAgo.minusHours(2));
-//
-//        ProductReservation expired2 = new ProductReservation();
-//        expired2.setId(11L);
-//        expired2.setReservedQuantity(30);
-//        expired2.setProduct(product);
-//        expired2.setExpiresAt(fiveMinutesAgo.minusHours(1));
-//
-//        when(productReservationRepository.findAllByExpiresAtBefore(fiveMinutesAgo))
-//                .thenReturn(List.of(expired1, expired2));
-//
-//        doNothing().when(productReservationRepository).deleteAll(List.of(expired1, expired2));
-//
-//        reservationService.deleteAllExpired();
-//
-//        assertEquals(150, product.getAvailableQuantity());
-//
-//        verify(productRepository, times(2)).save(product);
-//        verify(productReservationRepository).deleteAll(List.of(expired1, expired2));
-//    }
+    @Test
+    @DisplayName("cancel reservation")
+    void cancel_reservation() throws ProductNotFoundException, OutOfStockException {
+        ProductReservation reservation = new ProductReservation();
+        reservation.setProduct(product);
+        reservation.setExpiresAt(LocalDateTime.now().plusHours(5));
+        reservation.setId(5L);
+        reservation.setReservedQuantity(10);
+        when(productReservationRepository.findById(5L)).thenReturn(Optional.of(reservation));
+
+        reservationService.deleteById(5L);
+        assertEquals(100, product.getAvailableQuantity());
+        verify(productReservationRepository).deleteById(5L);
+    }
 
 }
